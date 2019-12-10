@@ -464,11 +464,6 @@ Function Set-EnvironmentVariable {
 
 }
 
-
-# --------------------------------------------------
-# Misc
-# --------------------------------------------------
-
 Function Set-WindowTitle {
 
     [CmdletBinding()]
@@ -490,6 +485,24 @@ Function Set-WindowTitle {
     }
 
     $host.ui.RawUI.WindowTitle = $WindowTitle
+
+}
+
+Function Download-Video {
+
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)]
+        [string[]]
+        $VideoUrl,
+
+        [string[]]
+        $YoutubeDlArgs = @('--write-thumbnail', '--write-description', '--add-metadata', '--all-subs')
+    )
+
+    process {
+        youtube-dl $YoutubeDlArgs $VideoUrl
+    }
 
 }
 
