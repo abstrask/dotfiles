@@ -245,7 +245,7 @@ Function Start-K8sSandboxInstances {
 
     # Add -wait option
 
-     # Start stopped instances
+    # Start stopped instances
     $StoppedInstances = aws.exe --profile default ec2 describe-instances --filters "Name=tag:Name,Values=k8s-sandbox-*" "Name=instance-state-name,Values=stopped" --query "Reservations[].Instances[].InstanceId" --output text
     If ($StoppedInstances) {
         $StoppedInstances.Split() | % { Write-Host "Starting instance $_"; aws.exe --profile default ec2 start-instances --instance-ids $_ | Out-Null }
@@ -278,12 +278,31 @@ Function Add-K8sSandboxEndpointVariables {
     } until ($RunningInstanceWithEndpointCount -ge $RunningInstanceCount)
 
     # Save public DNS names in variables
-    $RunningInstances | % { New-Variable -Name $_.Split()[0] -Value $_.Split()[1] -Force -Scope Global}
+    $RunningInstances | % { New-Variable -Name $_.Split()[0] -Value $_.Split()[1] -Force -Scope Global }
 
     Write-Host "`nConnect with:"
     Get-Variable "k8s-sandbox-*" | ForEach {
         Write-Host "ssh -i ~/.ssh/id_rsa_ec2_eu-central-1 ubuntu@`${$($_.Name)}" -ForegroundColor White
     }
+
+}
+
+
+# --------------------------------------------------
+# Git/GitHub
+# --------------------------------------------------
+
+Function Get-GHMetadata {
+
+    [CmdletBinding()]
+
+    param (
+        [Parameter(Mandatory)]
+        [string]
+        $Project
+    )
+
+    Invoke-RestMethod "https://raw.githubusercontent.com/${Project}/master/tools/metadata.json"
 
 }
 
@@ -417,7 +436,8 @@ Function Get-EnvironmentVariable {
     # Output variables
     If ($AsObject) {
         Return $EnvVars
-    } else {
+    }
+    else {
         Return $EnvVars | Select-Object -ExpandProperty Value
     }
 
@@ -462,10 +482,10 @@ Function Set-EnvironmentVariable {
     )
 
     Try { [Environment]::SetEnvironmentVariable($Name, $Value, $Scope) }
-    Catch {Throw "$($Error[0].Exception.Message)"}
+    Catch { Throw "$($Error[0].Exception.Message)" }
 
     Return [PSCustomObject]@{
-        Name = $Name
+        Name  = $Name
         Value = $Value
         Scope = $Scope
     }
@@ -514,12 +534,28 @@ Function Download-Video {
 
 }
 
+Function Get-PublicIP {
+    Invoke-RestMethod -Uri https://api.ipify.org?format=json | Select -Expand ip
+}
+
 
 # --------------------------------------------------
 # Aliases
 # --------------------------------------------------
 
 . (Join-Path -Path (Split-Path -Path $MyInvocation.MyCommand.Path -Parent) -ChildPath 'alias.ps1')
+
+
+# --------------------------------------------------
+#
+# --------------------------------------------------
+
+# Check if using latest version
+$LatestVersion = (Invoke-RestMethod https://raw.githubusercontent.com/PowerShell/PowerShell/master/tools/metadata.json).StableReleaseTag -replace "v", ""
+$CurrentVersion = $PSVersionTable.PSVersion.ToString()
+If ($LatestVersion -ne $CurrentVersion) {
+    Write-Host "PowerShell Core version $LatestVersion is available" -ForegroundColor Yellow
+}
 
 
 # --------------------------------------------------
