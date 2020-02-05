@@ -36,6 +36,32 @@ If ((Get-Content -Path $ProfilePath -ErrorAction SilentlyContinue) -notcontains 
 
 
 # --------------------------------------------------
+# Classes
+# --------------------------------------------------
+
+Class KubeContexts : System.Management.Automation.IValidateSetValuesGenerator {
+    [String[]] GetValidValues() {
+        $KubeContexts = Kube-Context -List -NameOnly
+        return [String[]] $KubeContexts
+    }
+}
+
+Class KubeNamespaces : System.Management.Automation.IValidateSetValuesGenerator {
+    [String[]] GetValidValues() {
+        $KubeNamespaces = Kube-Namespace -List -NameOnly
+        return [String[]] $KubeNamespaces
+    }
+}
+
+Class AwsProfiles : System.Management.Automation.IValidateSetValuesGenerator {
+    [String[]] GetValidValues() {
+        $AwsProfiles = Aws-Profile -List
+        return [String[]] $AwsProfiles
+    }
+}
+
+
+# --------------------------------------------------
 # Theming
 # --------------------------------------------------
 
@@ -75,7 +101,8 @@ Function Aws-Profile {
             Mandatory = $True,
             Position = 0
         )]
-        [ArgumentCompleter( { Aws-Profile -List } )]
+        # [ArgumentCompleter( { Aws-Profile -List } )]
+        [ValidateSet([AwsProfiles])]
         [string]$Profile,
 
         [Parameter(ParameterSetName = 'Unset', Mandatory = $False)]
@@ -136,6 +163,32 @@ Function Assume-AWSRole {
 }
 
 
+Function Set-KubernetesInstanceUnhealthy {
+
+    [CmdletBinding()]
+
+    param (
+        [Parameter(Mandatory)]
+        [string]
+        $NodeName,
+
+        [string]
+        $AwsProfile = 'oxygen-prime',
+
+        [string]
+        $AwsRegion = 'eu-west-1'
+
+    )
+
+    # Get Instance id
+    $InstanceId = aws --profile $AwsProfile --region $AwsRegion ec2 describe-instances --filters "Name=private-dns-name,Values=$NodeName" --query "Reservations[].Instances[].InstanceId" --output text
+    Write-Host "Instance id of '$NodeName' is $InstanceId"
+
+    aws --profile $AwsProfile --region $AwsRegion autoscaling set-instance-health --instance-id $InstanceId --health-status Unhealthy
+
+}
+
+
 # --------------------------------------------------
 # Kubernetes
 # --------------------------------------------------
@@ -152,9 +205,10 @@ Function Kube-Context {
             Mandatory = $True,
             Position = 0
         )]
-        [ArgumentCompleter( { Kube-Context -List -NameOnly } )]
+        # [ArgumentCompleter( { Kube-Context -List -NameOnly } )]
+        [ValidateSet([KubeContexts])]
         [string]$Context,
-
+        
         [Parameter(ParameterSetName = 'Unset', Mandatory = $False)]
         [switch]$Unset,
 
@@ -166,19 +220,23 @@ Function Kube-Context {
 
     )
 
-    Switch ($PSCmdlet.ParameterSetName) {
+    process {
 
-        'Set' {
-            kubectl.exe config use-context $Context
-        }
+        Switch ($PSCmdlet.ParameterSetName) {
 
-        'List' {
-            If ($NameOnly) {
-                (kubectl.exe config get-contexts -o name) -replace 'namespace/', ''
+            'Set' {
+                kubectl.exe config use-context $Context
             }
-            else {
-                kubectl.exe config get-contexts
+
+            'List' {
+                If ($NameOnly) {
+                    (kubectl.exe config get-contexts -o name) -replace 'namespace/', ''
+                }
+                else {
+                    kubectl.exe config get-contexts
+                }
             }
+
         }
 
     }
@@ -197,7 +255,8 @@ Function Kube-Namespace {
             Mandatory = $True,
             Position = 0
         )]
-        [ArgumentCompleter( { Kube-Namespace -List -NameOnly } )]
+        # [ArgumentCompleter( { Kube-Namespace -List -NameOnly } )]
+        [ValidateSet([KubeNamespaces])]
         [string]$Namespace,
 
         [Parameter(ParameterSetName = 'Unset', Mandatory = $False)]
