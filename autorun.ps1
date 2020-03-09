@@ -599,11 +599,17 @@ Function Get-PublicIP {
 
 
 # --------------------------------------------------
+# Other customisations
+# --------------------------------------------------
+
+$ErrorView = "ConciseView"
+
+
+# --------------------------------------------------
 # Aliases
 # --------------------------------------------------
 
 . (Join-Path -Path (Split-Path -Path $MyInvocation.MyCommand.Path -Parent) -ChildPath 'alias.ps1')
-
 
 # --------------------------------------------------
 #
