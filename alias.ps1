@@ -19,9 +19,10 @@ If (Test-Path ~/.kube -PathType Container) {
 # Aliases
 # --------------------------------------------------
 
-New-Alias -Name grep -Value Select-String -Force
-New-Alias -Name k -Value kubectl.exe -Force
-New-Alias -Name g -Value git.exe -Force
+New-Alias grep Select-String -Force
+New-Alias k kubectl.exe -Force
+New-Alias g git.exe -Force
+New-Alias m multipass.exe -Force
 
 
 # --------------------------------------------------

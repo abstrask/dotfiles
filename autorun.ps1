@@ -76,13 +76,15 @@ Class AwsProfiles : System.Management.Automation.IValidateSetValuesGenerator {
 #     Write-Warning "PowerLine module not found, skipping theming"
 # }
 
-If (Get-Module oh-my-posh -ListAvailable) {
-    Import-Module oh-my-posh
-    Set-Theme Paradox
-}
-Else {
-    Write-Warning "oh-my-posh module not found, skipping theming"
-}
+# If (Get-Module oh-my-posh -ListAvailable) {
+#     Import-Module oh-my-posh
+#     Set-Theme Paradox
+# }
+# Else {
+#     Write-Warning "oh-my-posh module not found, skipping theming"
+# }
+
+Invoke-Expression (&starship init powershell)
 
 
 # --------------------------------------------------
@@ -173,7 +175,7 @@ Function Set-KubernetesInstanceUnhealthy {
         $NodeName,
 
         [string]
-        $AwsProfile = 'oxygen-prime',
+        $AwsProfile = 'oxygen-orgrole',
 
         [string]
         $AwsRegion = 'eu-west-1'
@@ -185,6 +187,31 @@ Function Set-KubernetesInstanceUnhealthy {
     Write-Host "Instance id of '$NodeName' is $InstanceId"
 
     aws --profile $AwsProfile --region $AwsRegion autoscaling set-instance-health --instance-id $InstanceId --health-status Unhealthy
+
+}
+
+
+Function Roll-KubernetesNode {
+
+    [CmdletBinding()]
+
+    param (
+        [Parameter(Mandatory)]
+        [string]
+        $NodeName,
+
+        [string]
+        $AwsProfile = 'oxygen-orgrole',
+
+        [string]
+        $AwsRegion = 'eu-west-1'
+
+    )
+
+    kubectl drain $NodeName --ignore-daemonsets --delete-local-data --grace-period=30 --timeout=2m --force
+    If ($LASTEXITCODE -eq 0) {
+        Set-KubernetesInstanceUnhealthy -NodeName $NodeName -AwsProfile $AwsProfile -AwsRegion $AwsRegion
+    }
 
 }
 
@@ -583,18 +610,112 @@ Function Download-Video {
         [string[]]
         $VideoUrl,
 
+        [Parameter()]
+        [string]
+        # $Output = '~/Videos/%(title)s-%(id)s.%(ext)s',
+        $Output = '~/Videos/%(title)s.%(ext)s',
+
         [string[]]
         $YoutubeDlArgs = @('--write-thumbnail', '--write-description', '--add-metadata', '--all-subs')
     )
 
     process {
-        youtube-dl $YoutubeDlArgs $VideoUrl
+        youtube-dl --output $Output $YoutubeDlArgs $VideoUrl 
     }
 
 }
 
 Function Get-PublicIP {
     Invoke-RestMethod -Uri https://api.ipify.org?format=json | Select -Expand ip
+}
+
+Function New-SSHKeyPair {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)]
+        [string]
+        $FileName,
+
+        [Parameter()]
+        [string]
+        $Comment = $FileName,
+
+        [Parameter()]
+        [string]
+        $Type = 'rsa',
+
+        [Parameter()]
+        [int16]
+        $Bits = 4096,
+
+        [Parameter()]
+        [string]
+        $Path = (Join-Path -Path '~' -ChildPath '.ssh')
+    )
+
+    $FilePath = Join-Path -Path (Resolve-Path $Path) -ChildPath $FileName
+    & ssh-keygen -t $Type -b $Bits -C $Comment -f $FilePath
+
+}
+
+
+Function Get-DateTime {
+    
+    [CmdletBinding(DefaultParameterSetName = 'DateTime')]
+
+    param (
+        [Parameter(
+            ParameterSetName = 'DateTime',
+            Position = 0
+        )]
+        [datetime]
+        $Date,
+
+        [Parameter(
+            ParameterSetName = 'UnixTime',
+            Position = 0,
+            Mandatory
+        )]
+        [int64]
+        $UnixTime
+    )
+
+    # Get specified time or current
+    Switch ($PSCmdlet.ParameterSetName) {
+        "DateTime" {
+            if ($Date) {
+                $DateTime = Get-Date -Date $Date
+            }
+            else {
+                $DateTime = Get-Date
+            }
+        }
+        "UnixTime" {
+            $InputUnixTime = $UnixTime
+            $DateTime = ([datetimeoffset]::FromUnixTimeSeconds($UnixTime)).LocalDateTime
+        }
+    }
+
+    # Convert time
+    $Epoch = ([datetimeoffset]::FromUnixTimeSeconds(0)).DateTime
+    $DateTimeUTC = (Get-Date -Date $DateTime).ToUniversalTime()
+    $UnixTimeS = [math]::Round((($DateTimeUTC - $Epoch) | Select-Object -Expand TotalSeconds), 3)
+
+    # Return date in various formats
+    Return [pscustomobject]@{
+        Epoch          = $Epoch
+        InputDateTime  = $Date
+        InputUnixTime  = $InputUnixTime
+        DateTime       = $DateTime
+        DateTimeUTC    = $DateTimeUTC
+        ISOSortable    = (Get-Date $DateTime -Format u) -replace "Z$", ""
+        ISOSortableUTC = (Get-Date $DateTimeUTC -Format u) -replace "Z$", ""
+        TimeStamp      = Get-Date -Date $DateTime -Format "yyyyMMdd-HHmmss"
+        TimeStampUTC   = Get-Date -Date $DateTimeUTC -Format "yyyyMMdd-HHmmss"
+        UnixTime       = [int64]$UnixTimeS
+        UnixTimeMs     = [int64]$UnixTimeS * 1000
+    }
+
 }
 
 
