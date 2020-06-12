@@ -763,11 +763,11 @@ $ErrorView = "ConciseView"
 # --------------------------------------------------
 
 # Check if using latest version
-$LatestVersion = (Invoke-RestMethod https://raw.githubusercontent.com/PowerShell/PowerShell/master/tools/metadata.json).StableReleaseTag -replace "v", ""
-$CurrentVersion = $PSVersionTable.PSVersion.ToString()
-If ($LatestVersion -ne $CurrentVersion) {
-    Write-Host "PowerShell Core $LatestVersion is available" -ForegroundColor Yellow
-}
+# $LatestVersion = (Invoke-RestMethod https://raw.githubusercontent.com/PowerShell/PowerShell/master/tools/metadata.json).StableReleaseTag -replace "v", ""
+# $CurrentVersion = $PSVersionTable.PSVersion.ToString()
+# If ($LatestVersion -ne $CurrentVersion) {
+#     Write-Host "PowerShell Core $LatestVersion is available" -ForegroundColor Yellow
+# }
 
 $Bin = @()
 $Bin += @{
