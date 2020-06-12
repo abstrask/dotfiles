@@ -739,7 +739,7 @@ Function Check-BinVersion {
     $RemoteVer = Invoke-Command $RemoteVerCmd
 
     If ($LocalVer -ne $RemoteVer) {
-        Write-Host "${Name} version ${RemoteVer} is available (${LocalVer} installed)" -ForegroundColor Yellow
+        Write-Host "${Name} ${RemoteVer} is available (${LocalVer} installed)" -ForegroundColor Yellow
     }
 
 }
@@ -766,7 +766,7 @@ $ErrorView = "ConciseView"
 $LatestVersion = (Invoke-RestMethod https://raw.githubusercontent.com/PowerShell/PowerShell/master/tools/metadata.json).StableReleaseTag -replace "v", ""
 $CurrentVersion = $PSVersionTable.PSVersion.ToString()
 If ($LatestVersion -ne $CurrentVersion) {
-    Write-Host "PowerShell Core version $LatestVersion is available" -ForegroundColor Yellow
+    Write-Host "PowerShell Core $LatestVersion is available" -ForegroundColor Yellow
 }
 
 $Bin = @()
