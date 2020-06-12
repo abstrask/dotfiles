@@ -718,6 +718,32 @@ Function Get-DateTime {
 
 }
 
+Function Check-BinVersion {
+
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)]
+        [string]
+        $Name,
+
+        [Parameter(Mandatory)]
+        [scriptblock]
+        $LocalVerCmd,
+
+        [Parameter(Mandatory)]
+        [scriptblock]
+        $RemoteVerCmd
+    )
+
+    $LocalVer = Invoke-Command $LocalVerCmd
+    $RemoteVer = Invoke-Command $RemoteVerCmd
+
+    If ($LocalVer -ne $RemoteVer) {
+        Write-Host "${Name} version ${RemoteVer} is available (${LocalVer} installed)" -ForegroundColor Yellow
+    }
+
+}
+
 
 # --------------------------------------------------
 # Other customisations
@@ -742,6 +768,30 @@ $CurrentVersion = $PSVersionTable.PSVersion.ToString()
 If ($LatestVersion -ne $CurrentVersion) {
     Write-Host "PowerShell Core version $LatestVersion is available" -ForegroundColor Yellow
 }
+
+$Bin = @()
+$Bin += @{
+    Name         = 'Kubectl'
+    LocalVerCmd  = { (((& kubectl version --client --short).Split(' '))[2]) }
+    RemoteVerCmd = { (Invoke-WebRequest "https://storage.googleapis.com/kubernetes-release/release/stable.txt").Content.Trim() }
+}
+$Bin += @{
+    Name         = 'K9s'
+    LocalVerCmd  = { "v" + (& k9s version --short | Select-String -Pattern '^Version\s+(.+)').Matches.Groups[1].Value }
+    RemoteVerCmd = { (Invoke-RestMethod "https://api.github.com/repos/derailed/k9s/releases/latest").tag_name }
+}
+$Bin += @{
+    Name         = 'Saml2aws'
+    LocalVerCmd  = { "v" + (& saml2aws --version 2>&1) }
+    RemoteVerCmd = { (Invoke-RestMethod "https://api.github.com/repos/versent/saml2aws/releases/latest").tag_name }
+}
+# $Bin += @{
+#     Name         = 'Helm'
+#     LocalVerCmd  = { ((((& helm version --client --short).Split(' '))[1]).Split('+'))[0] }
+#     RemoteVerCmd = { (Invoke-RestMethod "https://api.github.com/repos/helm/helm/releases/latest").tag_name }
+# }
+
+$Bin | % { Check-BinVersion @_ }
 
 
 # --------------------------------------------------
