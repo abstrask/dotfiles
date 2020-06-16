@@ -659,6 +659,20 @@ Function New-SSHKeyPair {
 }
 
 
+Function Remove-SSHKnownHost {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)]
+        [string]
+        $HostName
+    )
+
+    $KnownHostsPath = '~/.ssh/known_hosts'
+    Set-Content $KnownHostsPath -Value (Get-Content $KnownHostsPath | Select-String -Pattern "^$HostName," -NotMatch)
+
+}
+
+
 Function Get-DateTime {
     
     [CmdletBinding(DefaultParameterSetName = 'DateTime')]
