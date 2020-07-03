@@ -805,7 +805,8 @@ $Bin += @{
 #     RemoteVerCmd = { (Invoke-RestMethod "https://api.github.com/repos/helm/helm/releases/latest").tag_name }
 # }
 
-$Bin | % { Check-BinVersion @_ }
+Write-Host 'Check for tool updates: ' -NoNewline
+Write-Host '$Bin | % { Check-BinVersion @_ }' -ForegroundColor Yellow
 
 
 # --------------------------------------------------
@@ -817,4 +818,4 @@ Dynamic arguments with better auto-completion?
 https://martin77s.wordpress.com/2014/06/09/dynamic-validateset-in-a-dynamic-parameter/
 #>
 
-Write-Host "`n"
+# Write-Host "`n"
