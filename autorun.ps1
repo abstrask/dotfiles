@@ -300,7 +300,7 @@ Function Kube-Namespace {
     Switch ($PSCmdlet.ParameterSetName) {
 
         'Set' {
-            kubectl.exe config set-context (kubectl.exe config current-context) --namespace $Namespace
+            kubectl.exe config set-context --current --namespace $Namespace
             Set-Variable -Name Namespace -Value $Namespace -Scope Global -Force
         }
 
