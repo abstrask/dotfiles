@@ -835,6 +835,9 @@ op edit item bl4ilpgiie53ecgzlkmu3qlkxu $enc --vault Private
 
 $ErrorView = "ConciseView"
 
+# PSModules path
+Set-Env -Name PSModulePath -Value "C:\Users\${env:USERNAME}\.powershell\Modules;C:\Program Files\PowerShell\7\Modules"
+
 
 # --------------------------------------------------
 # Aliases
