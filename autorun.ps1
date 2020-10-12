@@ -133,10 +133,9 @@ Function Aws-Profile {
 
 }
 
-Function Assume-AWSRole {
+Function Assume-AWSCLIRole {
 
     [CmdletBinding(DefaultParameterSetName = 'NotARN')]
-    [Alias("awr")]
 
     param (
 
@@ -161,6 +160,149 @@ Function Assume-AWSRole {
         }
 
     }
+
+}
+
+
+Function Assume-AwsRole {
+
+    [CmdletBinding(DefaultParameterSetName = 'NotARN')]
+    [Alias('awr')]
+
+    param (
+
+        [Parameter(ParameterSetName = 'NotARN', Mandatory = $True)]
+        [string]$AccountId,
+        
+        [Parameter(ParameterSetName = 'NotARN', Mandatory = $False)]
+        [string]$RoleName = 'OrgRole',
+
+        [Parameter(ParameterSetName = 'NotARN', Mandatory = $False)]
+        [string]
+        $SourceProfile,
+
+        [Parameter(ParameterSetName = 'NotARN', Mandatory = $False)]
+        [string]
+        $DestinationProfile = 'Assume'
+
+    )
+
+    # Use specified AWS profile if defined (else default credential search)
+    If ($SourceProfile) {    
+        Set-AWSCredential -ProfileName $SourceProfile
+    }
+
+    Switch ($PSCmdlet.ParameterSetName) {
+
+        'NotARN' {
+            $RoleArn = "arn:aws:iam::${AccountId}:role/${RoleName}"
+            Try { $Creds = Use-STSRole -RoleArn $RoleArn -RoleSessionName Assume-Role | Select-Object -Expand Credentials }
+            Catch { Throw "Failed to assume role: ($_.Message)" }
+            Set-AWSCredential -AccessKey $Creds.AccessKeyId -SecretKey $Creds.SecretAccessKey -SessionToken $Creds.SessionToken -StoreAs $DestinationProfile
+            Write-Host "Assumed role stored in '$DestinationProfile' profile"
+        }
+
+    }
+
+}
+
+
+Function Get-AwsEc2Instances {
+
+    [CmdletBinding()]
+
+    param (
+
+        [Parameter(Mandatory = $False)]
+        [string]
+        $AwsProfile,
+
+        [Parameter(Mandatory = $False)]
+        [string[]]
+        $Region
+
+    )
+
+    # Use specified AWS profile if defined (else default credential search)
+    If ($AwsProfile) {    
+        Set-AWSCredential -ProfileName $AwsProfile
+    }
+
+    If (-Not($Region)) {
+        $Region = Get-AWSRegion | Select-Object -Expand Region | Sort
+    }
+    Write-Verbose "Querying $($Region.Count) region(s)" -Verbose
+
+    ForEach ($Reg in $Region) {
+
+        Try { Get-EC2Instance -Region $Reg | Select -Expand Instances | Select InstanceId, PrivateDnsName, InstanceType, LaunchTime }
+        Catch { <#Write-Warning "$_"#> }
+
+    }
+
+}
+
+
+function Get-AwsEksImage ([string]$KubernetesVersion = '*', [int]$Latest = 10) {
+    #Requires -Module @{ ModuleName = 'AWSPowerShell.NetCore'; ModuleVersion = '4.0.0' }
+    Get-EC2Image -Owner amazon -Filter @{ Name = "name"; Values = "amazon-eks-node-${KubernetesVersion}-*" } | Select CreationDate, Name, Description, ImageId | Sort CreationDate -Descending | Select -First $Latest
+}
+
+
+Function Get-AwsRdsInstances {
+
+    [CmdletBinding()]
+
+    param (
+
+        [Parameter(Mandatory = $False)]
+        [string]
+        $AwsProfile,
+
+        [Parameter(Mandatory = $False)]
+        [string[]]
+        $Region
+
+    )
+
+    # Use specified AWS profile if defined (else default credential search)
+    If ($AwsProfile) {    
+        Set-AWSCredential -ProfileName $AwsProfile
+    }
+
+    If (-Not($Region)) {
+        $Region = Get-AWSRegion | Select-Object -Expand Region | Sort
+    }
+    Write-Verbose "Querying $($Region.Count) region(s)" -Verbose
+
+    ForEach ($Reg in $Region) {
+
+        Try { Get-RDSDBInstance -Region $Reg -ProfileName $AwsProfile | Select DBInstanceIdentifier, DBInstanceClass, Engine, InstanceCreateTime }
+        Catch { <#Write-Warning "$_"#> }
+
+    }
+
+}
+
+
+Function Get-AwsAccount {
+
+    [CmdletBinding()]
+
+    param (
+
+        [Parameter(Mandatory = $False)]
+        [string]
+        $AwsProfile
+
+    )
+
+    # Use specified AWS profile if defined (else default credential search)
+    If ($AwsProfile) {    
+        Set-AWSCredential -ProfileName $AwsProfile
+    }
+
+    Get-ORGAccountList -AWSProfileName $AwsProfile | Select-Object Name, Id | Sort-Object Name
 
 }
 
