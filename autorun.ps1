@@ -540,12 +540,25 @@ Function Get-GHMetadata {
 
 Function Get-GitLog {
 
-    & git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+    git.exe log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
 
 }
 New-Alias glog Get-GitLog -Force
 
-# git.exe update-index --chmod=+x
+
+Function Change-GitFileMod {
+
+    [CmdletBinding()]
+    [Alias("gchmx")]
+    param (
+        [Parameter()]
+        [string]
+        $FilePath
+    )
+
+    git.exe update-index --chmod=+x $FilePath
+}
+
 
 # --------------------------------------------------
 # Misc
