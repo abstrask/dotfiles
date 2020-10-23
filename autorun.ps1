@@ -362,6 +362,10 @@ Function Roll-KubernetesNode {
 # Kubernetes
 # --------------------------------------------------
 
+If (Test-Path ~/.kube -PathType Container) {
+    $env:KUBECONFIG = (gci ~/.kube/*.config).FullName -join ';'
+} 
+
 Function Kube-Context {
 
     [CmdletBinding(DefaultParameterSetName = 'List')]
@@ -534,6 +538,14 @@ Function Get-GHMetadata {
 
 }
 
+Function Get-GitLog {
+
+    & git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+
+}
+
+New-Alias glog GetGitLog
+# git.exe update-index --chmod=+x
 
 # --------------------------------------------------
 # Misc
@@ -985,7 +997,11 @@ Set-Env -Name PSModulePath -Value "C:\Users\${env:USERNAME}\.powershell\Modules;
 # Aliases
 # --------------------------------------------------
 
-. (Join-Path -Path (Split-Path -Path $MyInvocation.MyCommand.Path -Parent) -ChildPath 'alias.ps1')
+New-Alias grep Select-String -Force
+New-Alias k kubectl.exe -Force
+New-Alias g git.exe -Force
+New-Alias m multipass.exe -Force
+
 
 # --------------------------------------------------
 #
