@@ -808,8 +808,9 @@ Function New-SSHKeyPair {
         $Comment = $FileName,
 
         [Parameter()]
+        [ValidateSet('ed25519', 'rsa')]
         [string]
-        $Type = 'rsa',
+        $Type = 'ed25519',
 
         [Parameter()]
         [int16]
