@@ -469,6 +469,32 @@ Function Kube-Namespace {
 }
 
 
+Function Set-KubeNamespaceFinalizer {
+
+    [CmdletBinding()]
+    [Alias("kubens", "kns")]
+
+    Param(
+        [Parameter(Mandatory)]
+        [ValidateSet([KubeNamespaces])]
+        [string]$Namespace,
+
+        [string[]]$Finalizer
+    )
+
+    If ($Finalizer.Count -gt 0) {
+        $FinalizerString = "[""$(${Finalizer} -join '","')""]"
+    } else {
+        $FinalizerString = "[]"
+    }
+
+    Write-Debug "Finalizer: $Finalizer (count: $($Finalizer.Count))"
+    Write-Debug "FinalizerString: $FinalizerString"
+
+    "{""apiVersion"":""v1"",""kind"":""Namespace"",""metadata"":{""name"":""${Namespace}""},""spec"":{""finalizers"":${FinalizerString}}}" | kubectl replace --raw "/api/v1/namespaces/${Namespace}/finalize" -f -
+}
+
+
 # --------------------------------------------------
 # Kubernetes sandbox
 # --------------------------------------------------
