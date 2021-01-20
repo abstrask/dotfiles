@@ -469,10 +469,24 @@ Function Kube-Namespace {
 }
 
 
+Function Get-KubeNamespaceFinalizer {
+
+    [CmdletBinding()]
+
+    Param(
+        [Parameter(Mandatory)]
+        [ValidateSet([KubeNamespaces])]
+        [string]$Namespace
+    )
+
+    kubectl.exe get namespace ${Namespace} -o json | ConvertFrom-Json | Select -Expand spec | Select -Expand finalizers
+
+}
+
+
 Function Set-KubeNamespaceFinalizer {
 
     [CmdletBinding()]
-    [Alias("kubens", "kns")]
 
     Param(
         [Parameter(Mandatory)]
