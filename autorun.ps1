@@ -469,21 +469,6 @@ Function Kube-Namespace {
 }
 
 
-Function Get-KubeNamespaceFinalizer {
-
-    [CmdletBinding()]
-
-    Param(
-        [Parameter(Mandatory)]
-        [ValidateSet([KubeNamespaces])]
-        [string]$Namespace
-    )
-
-    kubectl.exe get namespace ${Namespace} -o json | ConvertFrom-Json | Select -Expand spec | Select -Expand finalizers
-
-}
-
-
 Function Set-KubeNamespaceFinalizer {
 
     [CmdletBinding()]
@@ -498,7 +483,8 @@ Function Set-KubeNamespaceFinalizer {
 
     If ($Finalizer.Count -gt 0) {
         $FinalizerString = "[""$(${Finalizer} -join '","')""]"
-    } else {
+    }
+    else {
         $FinalizerString = "[]"
     }
 
@@ -506,6 +492,83 @@ Function Set-KubeNamespaceFinalizer {
     Write-Debug "FinalizerString: $FinalizerString"
 
     "{""apiVersion"":""v1"",""kind"":""Namespace"",""metadata"":{""name"":""${Namespace}""},""spec"":{""finalizers"":${FinalizerString}}}" | kubectl replace --raw "/api/v1/namespaces/${Namespace}/finalize" -f -
+}
+
+
+Function Get-KubeFinalizer {
+
+    [CmdletBinding()]
+
+    Param(
+        [Parameter(Mandatory)]
+        [string]$ResourceType,
+
+        [string]$ResourceName
+    )
+
+    Switch ($ResourceType) {
+        { @('ns', 'namespace', 'namespaces') -contains $_ } { $FinalizerPath = '.spec.finalizers' }
+        Default { $FinalizerPath = '.metadata.finalizers' }
+    }
+
+    kubectl get ${ResourceType} ${ResourceName} -o custom-columns="NAME:.metadata.name,FINALIZERS:${FinalizerPath}"
+
+}
+
+Function Remove-KubeFinalizer {
+
+    [CmdletBinding()]
+
+    Param(
+        [Parameter(Mandatory)]
+        [string]$ResourceType,
+
+        [Parameter(Mandatory)]
+        [string]$ResourceName
+
+        # [string]$Finalizer
+    )
+
+    Switch ($ResourceType) {
+        { @('ns', 'namespace', 'namespaces') -contains $_ } {
+            $FinalizerLocation = 'spec'
+            $ApiVersion = 'v1'
+            $ApiName = 'namespaces'
+            $ApiKind = 'Namespace'
+        }
+        
+        Default {
+            $FinalizerLocation = 'metadata'
+        }
+    }
+
+    Switch ($FinalizerLocation) {
+
+        "spec" {
+            # If ($Finalizer.Count -gt 0) {
+            #     $FinalizerString = "[""$(${Finalizer} -join '","')""]"
+            # }
+            # else {
+            #     $FinalizerString = '[]'
+            # }
+
+            # $FinalizerPath = '.spec.finalizers'
+            "{""apiVersion"":""${ApiVersion}"",""kind"":""${ApiKind}"",""metadata"":{""name"":""${Namespace}""},""spec"":{""finalizers"":[]}}" | kubectl replace --raw "/api/v1/${ApiName}/${Namespace}/finalize" -f -
+        }
+
+        "metadata" {
+            # If ($Finalizer.Count -gt 0) {
+            #     $FinalizerString = "[""$(${Finalizer} -join '","')""]"
+            # }
+            # else {
+            #     $FinalizerString = 'null'
+            # }
+
+            kubectl patch ResourceType $ResourceName -p '{\"metadata\":{\"finalizers\":null}}'
+        }
+
+    }
+
 }
 
 
@@ -1027,7 +1090,7 @@ Function Get-1PSecureNote {
         )
     }
 
-    op @1pArgs | ConvertFrom-Json | Select-Object -ExpandProperty uuid | ForEach {op get item $_ --fields $Fields} | ConvertFrom-Json
+    op @1pArgs | ConvertFrom-Json | Select-Object -ExpandProperty uuid | ForEach { op get item $_ --fields $Fields } | ConvertFrom-Json
 
 }
 
