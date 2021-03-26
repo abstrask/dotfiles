@@ -317,7 +317,7 @@ Function Set-KubernetesInstanceUnhealthy {
         $NodeName,
 
         [string]
-        $AwsProfile = 'oxygen-orgrole',
+        $AwsProfile = 'saml',
 
         [string]
         $AwsRegion = 'eu-west-1'
@@ -343,7 +343,7 @@ Function Roll-KubernetesNode {
         $NodeName,
 
         [string]
-        $AwsProfile = 'oxygen-orgrole',
+        $AwsProfile = 'saml',
 
         [string]
         $AwsRegion = 'eu-west-1'
@@ -472,6 +472,7 @@ Function Kube-Namespace {
 Function Set-KubeNamespaceFinalizer {
 
     [CmdletBinding()]
+    [Alias("skf")]
 
     Param(
         [Parameter(Mandatory)]
@@ -498,6 +499,7 @@ Function Set-KubeNamespaceFinalizer {
 Function Get-KubeFinalizer {
 
     [CmdletBinding()]
+    [Alias("gkf")]
 
     Param(
         [Parameter(Mandatory)]
@@ -518,6 +520,7 @@ Function Get-KubeFinalizer {
 Function Remove-KubeFinalizer {
 
     [CmdletBinding()]
+    [Alias("rkf")]
 
     Param(
         [Parameter(Mandatory)]
@@ -564,7 +567,8 @@ Function Remove-KubeFinalizer {
             #     $FinalizerString = 'null'
             # }
 
-            kubectl patch ResourceType $ResourceName -p '{\"metadata\":{\"finalizers\":null}}'
+            kubectl patch ${ResourceType} ${ResourceName} -p '{\"metadata\":{\"finalizers\":null}}'
+            #  kubectl patch crd/MY_CRD_NAME -p '{"metadata":{"finalizers":[]}}' --type=merge
         }
 
     }
