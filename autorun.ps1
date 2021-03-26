@@ -350,7 +350,7 @@ Function Roll-KubernetesNode {
 
     )
 
-    kubectl drain $NodeName --ignore-daemonsets --delete-local-data --grace-period=30 --timeout=2m --force
+    kubectl drain $NodeName --ignore-daemonsets --delete-emptydir-data --grace-period=30 --timeout=2m --force
     If ($LASTEXITCODE -eq 0) {
         Set-KubernetesInstanceUnhealthy -NodeName $NodeName -AwsProfile $AwsProfile -AwsRegion $AwsRegion
     }
