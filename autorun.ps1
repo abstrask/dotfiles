@@ -59,15 +59,15 @@ If ((Get-Content -Path $ProfilePath -ErrorAction SilentlyContinue) -notcontains 
 #     Write-Warning "PowerLine module not found, skipping theming"
 # }
 
-# If (Get-Module oh-my-posh -ListAvailable) {
-#     Import-Module oh-my-posh
-#     Set-Theme Paradox
-# }
-# Else {
-#     Write-Warning "oh-my-posh module not found, skipping theming"
-# }
+If (Get-Module oh-my-posh -ListAvailable) {
+    Import-Module oh-my-posh
+    Set-Theme aliens
+}
+Else {
+    Write-Warning "oh-my-posh module not found, skipping theming"
+}
 
-Invoke-Expression (&starship init powershell)
+# Invoke-Expression (&starship init powershell)
 
 
 # --------------------------------------------------
