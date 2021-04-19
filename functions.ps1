@@ -189,7 +189,8 @@ Function Get-AwsEc2Instances {
 
 
 function Get-AwsEksImage ([string]$KubernetesVersion = '*', [int]$Latest = 10) {
-    #Requires -Module @{ ModuleName = 'AWSPowerShell.NetCore'; ModuleVersion = '4.0.0' }
+    #Requires -Module @{ ModuleName = 'AWS.Tools.Common'; ModuleVersion = '4.1.5.0' }
+    #Requires -Module @{ ModuleName = 'AWS.Tools.EC2'; ModuleVersion = '4.1.5.0' }
     Get-EC2Image -Owner amazon -Filter @{ Name = "name"; Values = "amazon-eks-node-${KubernetesVersion}-*" } | Select CreationDate, Name, Description, ImageId | Sort CreationDate -Descending | Select -First $Latest
 }
 
