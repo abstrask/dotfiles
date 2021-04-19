@@ -131,7 +131,7 @@ $Bin += @{
 }
 $Bin += @{
     Name         = 'K9s'
-    LocalVerCmd  = { "v" + (& k9s version --short | Select-String -Pattern '^Version\s+(.+)').Matches.Groups[1].Value }
+    LocalVerCmd  = { (& k9s version --short | Select-String -Pattern '^Version\s+(.+)').Matches.Groups[1].Value }
     RemoteVerCmd = { (Invoke-RestMethod "https://api.github.com/repos/derailed/k9s/releases/latest").tag_name }
 }
 $Bin += @{
