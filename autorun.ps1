@@ -59,9 +59,9 @@ If ((Get-Content -Path $ProfilePath -ErrorAction SilentlyContinue) -notcontains 
 #     Write-Warning "PowerLine module not found, skipping theming"
 # }
 
-If (Get-Module oh-my-posh -ListAvailable) {
+If (Get-Module oh-my-posh -All) {
     Import-Module oh-my-posh
-    Set-Theme aliens
+    Set-PoshPrompt aliens
 }
 Else {
     Write-Warning "oh-my-posh module not found, skipping theming"
