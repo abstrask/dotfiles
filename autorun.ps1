@@ -37,6 +37,22 @@ If ((Get-Content -Path $ProfilePath -ErrorAction SilentlyContinue) -notcontains 
     $ProfileAppendString | Out-File -Path $ProfilePath -Append
 }
 
+
+# --------------------------------------------------
+# PSModulePath
+# --------------------------------------------------
+
+# PSModules path
+$ModulesPath = "C:\Users\${env:USERNAME}\.powershell\Modules"
+New-Item $ModulesPath -ItemType Directory -Force | Out-Null
+# Set-Env -Name PSModulePath -Value $ModulesPath
+[Environment]::SetEnvironmentVariable("PSModulePath", $ModulesPath, "User")
+
+# Remove Documents entry from module path
+$MyDocsPath = [Environment]::GetFolderPath('MyDocuments')
+$env:PSModulePath = ($env:PSModulePath -split $PathSeparator | Where-Object { $_ -ne "${MyDocsPath}\PowerShell\Modules" }) -join $PathSeparator
+
+
 # --------------------------------------------------
 # Load functions
 # --------------------------------------------------
@@ -59,7 +75,7 @@ If ((Get-Content -Path $ProfilePath -ErrorAction SilentlyContinue) -notcontains 
 #     Write-Warning "PowerLine module not found, skipping theming"
 # }
 
-If (Get-Module oh-my-posh -All) {
+If (Get-Module oh-my-posh -ListAvailable) {
     Import-Module oh-my-posh
     Set-PoshPrompt aliens
 }
@@ -131,18 +147,6 @@ $Bin += @{
 
 Write-Host 'Check for tool updates: ' -NoNewline
 Write-Host '$Bin | % { Check-BinVersion @_ }' -ForegroundColor Yellow
-
-
-# --------------------------------------------------
-# PSModulePath
-# --------------------------------------------------
-
-# PSModules path
-Set-Env -Name PSModulePath -Value "C:\Users\${env:USERNAME}\.powershell\Modules"
-
-# Remove Documents entry from module path
-$MyDocsPath = [Environment]::GetFolderPath('MyDocuments')
-$env:PSModulePath = ($env:PSModulePath -split $PathSeparator | Where-Object { $_ -ne "${MyDocsPath}\PowerShell\Modules" }) -join $PathSeparator
 
 
 # --------------------------------------------------
