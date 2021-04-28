@@ -42,15 +42,16 @@ If ((Get-Content -Path $ProfilePath -ErrorAction SilentlyContinue) -notcontains 
 # PSModulePath
 # --------------------------------------------------
 
+# It seems PowerShell/AWS Tools installer does not respect removing Documents from the per-user modules path. FFS!
+
 # PSModules path
-$ModulesPath = "C:\Users\${env:USERNAME}\.powershell\Modules"
-New-Item $ModulesPath -ItemType Directory -Force | Out-Null
-# Set-Env -Name PSModulePath -Value $ModulesPath
-[Environment]::SetEnvironmentVariable("PSModulePath", $ModulesPath, "User")
+# $ModulesPath = "C:\Users\${env:USERNAME}\.powershell\Modules"
+# New-Item $ModulesPath -ItemType Directory -Force | Out-Null
+# [Environment]::SetEnvironmentVariable("PSModulePath", $ModulesPath, "User")
 
 # Remove Documents entry from module path
-$MyDocsPath = [Environment]::GetFolderPath('MyDocuments')
-$env:PSModulePath = ($env:PSModulePath -split $PathSeparator | Where-Object { $_ -ne "${MyDocsPath}\PowerShell\Modules" }) -join $PathSeparator
+# $MyDocsPath = [Environment]::GetFolderPath('MyDocuments')
+# $env:PSModulePath = ($env:PSModulePath -split $PathSeparator | Where-Object { $_ -ne "${MyDocsPath}\PowerShell\Modules" }) -join $PathSeparator
 
 
 # --------------------------------------------------
