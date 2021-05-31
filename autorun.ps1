@@ -7,6 +7,7 @@ Write-Host "Running ""$AutorunScript"" (`$AutorunScript)" -ForegroundColor DarkG
 $PathSeparator = [System.IO.Path]::PathSeparator
 $DirSeparator = [System.IO.Path]::DirectorySeparatorChar
 $MyDocsPath = [Environment]::GetFolderPath('MyDocuments')
+$DotfilesPath = Split-Path -Path $AutorunScript
 
 
 # --------------------------------------------------
@@ -58,7 +59,10 @@ If ((Get-Content -Path $ProfilePath -ErrorAction SilentlyContinue) -notcontains 
 # Load functions
 # --------------------------------------------------
 
-. (Join-Path -Path (Split-Path $MyInvocation.MyCommand.Source) -ChildPath "functions.ps1")
+Get-ChildItem -Path $DotfilesPath -Filter _*.ps1 | ForEach {
+    Write-Host "Running ""$($_.FullName)""" -ForegroundColor DarkGray
+    . $_.FullName
+}
 
 
 # --------------------------------------------------
@@ -88,15 +92,6 @@ Else {
 
 
 # --------------------------------------------------
-# Kubernetes
-# --------------------------------------------------
-
-If (Test-Path ~/.kube -PathType Container) {
-    $env:KUBECONFIG = (gci ~/.kube/*.config).FullName -join ';'
-} 
-
-
-# --------------------------------------------------
 # Other customisations
 # --------------------------------------------------
 
@@ -108,7 +103,6 @@ $ErrorView = "ConciseView"
 # --------------------------------------------------
 
 New-Alias grep Select-String -Force
-New-Alias k kubectl.exe -Force
 New-Alias g git.exe -Force
 New-Alias m multipass.exe -Force
 
