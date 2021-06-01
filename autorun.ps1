@@ -106,6 +106,7 @@ New-Alias grep Select-String -Force
 New-Alias g git.exe -Force
 New-Alias m multipass.exe -Force
 New-Alias python3 python.exe -Force
+New-Alias notepad++ 'C:\Program Files\Notepad++\notepad++.exe' -Force
 
 
 # --------------------------------------------------
