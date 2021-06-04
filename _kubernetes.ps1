@@ -28,9 +28,14 @@ New-Alias k kubectl.exe -Force
 # 
 # --------------------------------------------------
 
-If (Test-Path ~/.kube -PathType Container) {
-    $env:KUBECONFIG = (gci ~/.kube/*.config).FullName -join ';'
-} 
+Function Refresh-Kubeconfig {
+
+    If (Test-Path ~/.kube -PathType Container) {
+        $env:KUBECONFIG = (gci ~/.kube/*.config).FullName -join ';'
+    } 
+
+}
+Refresh-Kubeconfig
 
 
 # --------------------------------------------------
@@ -293,6 +298,27 @@ Function Remove-KubeFinalizer {
             #  kubectl patch crd/MY_CRD_NAME -p '{"metadata":{"finalizers":[]}}' --type=merge
         }
 
+    }
+
+}
+
+
+Function Kind {
+
+    $KindKubeconfig = Join-Path -Path (Resolve-Path ~) -ChildPath '.kube/kind.config'
+
+    $KubeconfigCmds = @(
+        'create'
+        'delete'
+        'export'
+    )
+
+    if ($KubeconfigCmds -contains $args[0] -and $args[1] -ne 'logs') {
+        kind.exe --kubeconfig $KindKubeconfig @args
+        Refresh-Kubeconfig
+    }
+    else {
+        kind.exe @args
     }
 
 }
