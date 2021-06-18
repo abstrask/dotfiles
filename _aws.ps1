@@ -247,3 +247,18 @@ Function Get-AwsAccount {
     Get-ORGAccountList -AWSProfileName $AwsProfile | Select-Object Name, Id | Sort-Object Name
 
 }
+
+
+Function Get-KubeConfigFromSSM {
+
+     [CmdletBinding()]
+
+    param (
+        [Parameter(Mandatory)]
+        [string]
+        $ClusterName
+    )
+
+    Get-SSMParameter -Name "/eks/${ClusterName}/deploy_user" -WithDecryption $true | Select -Expand Value | Out-FileUnix "~/.kube/${ClusterName}.config"
+
+}
