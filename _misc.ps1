@@ -523,6 +523,107 @@ Function Get-1PSecureNote {
 }
 
 
+Function Get-EOLChar {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)]
+        [string]
+        $Path
+    )
+
+    If ((Get-Content -Raw -Path $Path ).contains("`r`n")) {
+        Return '`r`n'
+    }
+    
+    If ((Get-Content -Raw -Path $Path ).contains("`n")) {
+        Return '`n'
+    }
+    else {
+        Write-Warning "No EOL character detected"
+        Return ''
+    }
+}
+
+
+Function Print-EOLChar {
+
+    [CmdletBinding()]
+    [Alias("gceol")]
+  
+    param (
+        [Parameter(Mandatory)]
+        [string]
+        $Path,
+
+        [Parameter()]
+        [string]
+        $EOLColour = 'Magenta'
+    )
+
+    $EOLChar = Get-EOLChar -Path $Path
+
+    Switch ($EOLChar) {
+        
+        '`r`n' {
+            $PrintEOLChar = "$([char]0x240D)$([char]0x2424)"
+            (Get-Content -Raw -Path $Path) -split "`r`n" | ForEach {
+                Write-Host "$_" -NoNewline
+                Write-Host  $PrintEOLChar -ForegroundColor $EOLColour
+            }
+        }
+
+        '`n' {
+            $PrintEOLChar = "$([char]0x2424)" 
+            (Get-Content -Raw -Path $Path) -split "`n" | ForEach {
+                Write-Host "$_" -NoNewline
+                Write-Host  $PrintEOLChar -ForegroundColor $EOLColour
+            }
+        }
+
+    } 
+
+}
+
+
+Function Out-StringWithLineNum {
+
+    [CmdletBinding()]
+    [Alias("outln")]
+
+    param (
+        [Parameter(
+            Position = 0,
+            Mandatory = $True,
+            ValueFromPipeline = $True
+        )]
+        [AllowEmptyString()]
+        [Alias('Input')]
+        [string[]]$InputString,
+
+        [Parameter()]
+        [string]
+        $LineNumColour = 'Magenta'
+
+    )
+
+    begin {
+        $count = 1
+    }
+
+    # Must be wrapped in "process" scriptblock, in order to handle blank lines in pipeline input
+    process {
+        Write-Host "$($count.ToString().PadLeft(4, ' ')): " -ForegroundColor $LineNumColour -NoNewline
+        $InputString
+        $count++
+    } 
+
+    end {
+        Return 
+    }
+    
+}
+
+
 <#
 Get-1PsecureNote -Tags 'ssh-sync' -Fields 'title,public key,private key'
 gci ~/.ssh | ? {$_.Name -ne 'known_hosts' -and $_.Name -ne 'config' -and $_.Extension -ne '.pub'} | % {$_.FullName}
