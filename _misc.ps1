@@ -474,54 +474,48 @@ Function Remove-TerraDir {
 
 
 # --------------------------------------------------
-# SSH/1Password
+# Docker
 # --------------------------------------------------
 
-Function Signin-1Password {
-    Invoke-Expression $(op signin 1rask)
-}
+Function Attach-DockerContainer {
 
-Function Get-1PVault {
-    op list vaults | ConvertFrom-Json | Select name, uuid | Sort Name
-}
-
-
-Function Get-1PSecureNote {
+    [CmdletBinding()]
+    [Alias("adc")]
 
     [CmdletBinding()]
     param (
         [Parameter()]
         [string]
-        $Vault = 'Private',
-
-        [Parameter()]
-        [string]
-        $Tags,
-
-        [Parameter()]
-        [string]
-        $Fields = 'title'
-
+        $ContainerName
     )
 
-    # Default args
-    $1pArgs = @(
-        'list', 'items'
-        '--categories', 'Secure Note'
-        '--vault', $Vault
-    )
-
-    # Tags args
-    If ($Tags) {
-        $1pArgs += @(
-            '--tags', $Tags
-        )
-    }
-
-    op @1pArgs | ConvertFrom-Json | Select-Object -ExpandProperty uuid | ForEach { op get item $_ --fields $Fields } | ConvertFrom-Json
-
+    docker start $ContainerName
+    docker attach $ContainerName
+   
 }
 
+Function Remove-DockerContainer {
+
+    [CmdletBinding()]
+    [Alias("rdc")]
+
+    [CmdletBinding()]
+    param (
+        [Parameter()]
+        [string]
+        $ContainerName
+    )
+
+    docker stop $ContainerName
+    docker rm $ContainerName
+   
+}
+
+
+
+# --------------------------------------------------
+# Strings
+# --------------------------------------------------
 
 Function Get-EOLChar {
     [CmdletBinding()]
@@ -622,22 +616,3 @@ Function Out-StringWithLineNum {
     }
     
 }
-
-
-<#
-Get-1PsecureNote -Tags 'ssh-sync' -Fields 'title,public key,private key'
-gci ~/.ssh | ? {$_.Name -ne 'known_hosts' -and $_.Name -ne 'config' -and $_.Extension -ne '.pub'} | % {$_.FullName}
-
-
-# Create blank secure note
-op create item 'Secure Note' $(op get template 'secure note' | op encode) --title "Test SSH" --vault Private --tags ssh-sync
-op create item 'Secure Note' $('{"notesPlain":"","sections":[{"fields":[{"k":"string","n":"br6c6faj3tohyyorxhai463z2m","t":"private key"},{"k":"string","n":"5dq64yw6iex34tbzsaolhqi5a4","t":"public key"}],"name":"keypair"}]}' | op encode) --title "Test SSH" --vault Private --tags ssh-sync
-
-
-$enc = '{"notesPlain":"","sections":[{"fields":[{"k":"string","n":"br6c6faj3tohyyorxhai463z2m","t":"private key","v":"privkey"},{"k":"string","n":"5dq64yw6iex34tbzsaolhqi5a4","t":"public key","v":"pubkey"}],"name":"keypair"}]}' | op encode
-op create item 'Secure Note' $enc --title "Test SSH" --vault Private --tags ssh-sync
-
-# Edit item
-op edit item bl4ilpgiie53ecgzlkmu3qlkxu $enc --vault Private
-# [ERROR] 2020/07/06 00:51:25 Nothing changed. Assignment statement number 1 is not formatted correctly. Use: [<section>.]<field>=<value>
-#>
