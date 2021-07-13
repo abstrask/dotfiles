@@ -116,7 +116,7 @@ New-Alias notepad++ 'C:\Program Files\Notepad++\notepad++.exe' -Force
 # Configure Git to use Windows' OpenSSH in order to enable ssh-agent support
 # https://snowdrift.tech/cli/ssh/git/tutorials/2019/01/31/using-ssh-agent-git-windows.html
 # It seems however Git for Windows still uses its own ssh config (), so have to explicitly add '-T', though 'ForwardAgent' is enabled in ~/.ssh/config
-Set-Env -Name GIT_SSH_COMMAND  -Value """$((Get-Command ssh).Source)"" -T "
+Set-Env -Name GIT_SSH_COMMAND  -Value """$((Get-Command ssh).Source)"" -T " | Out-Null
 
 
 # --------------------------------------------------
