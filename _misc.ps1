@@ -353,7 +353,12 @@ Function New-SSHKeyPair {
     )
 
     $FilePath = Join-Path -Path (Resolve-Path $Path) -ChildPath $FileName
-    & ssh-keygen -t $Type -b $Bits -C $Comment -f $FilePath
+
+    If ($Type -eq 'ed25519') {
+        & ssh-keygen -t $Type -C $Comment -f $FilePath
+    } Else {
+        & ssh-keygen -t $Type -b $Bits -C $Comment -f $FilePath
+    }
 
 }
 
