@@ -1,4 +1,16 @@
 # --------------------------------------------------
+# Classes
+# --------------------------------------------------
+
+Class DockerContainers : System.Management.Automation.IValidateSetValuesGenerator {
+    [String[]] GetValidValues() {
+        $DockerContainers = docker ps -a --format '{{.Names}}' | Sort
+        return [String[]] $DockerContainers
+    }
+}
+
+
+# --------------------------------------------------
 # Git/GitHub
 # --------------------------------------------------
 
@@ -81,7 +93,7 @@ Function Convert-Base64 {
         }
 
     }
-            
+
 }
 
 
@@ -234,7 +246,7 @@ Function Set-WindowTitle {
     )
 
     If (-Not($WindowTitle)) {
-        
+
         Switch ($PSVersionTable.PSEdition) {
 
             "Core" { $WindowTitle = "PowerShell Core" }
@@ -266,7 +278,7 @@ Function Download-Video {
     )
 
     process {
-        youtube-dl --output $Output $YoutubeDlArgs $VideoUrl 
+        youtube-dl --output $Output $YoutubeDlArgs $VideoUrl
     }
 
 }
@@ -302,7 +314,7 @@ Function Set-PwshModulePath {
         If (Test-Path $ConfigFilePath -PathType Leaf) {
             # Add or replace in existing config
             $CurrentPwshConfig = Get-Content $PwshCoreConfigFilePath -Raw -ErrorAction SilentlyContinue | ConvertFrom-Json
-            $CurrentPwshConfig | Add-Member -MemberType NoteProperty -Name PSModulePath -Value $ModulePath -Force   
+            $CurrentPwshConfig | Add-Member -MemberType NoteProperty -Name PSModulePath -Value $ModulePath -Force
             $NewPwshConfig = $CurrentPwshConfig | ConvertTo-Json
         }
         Else {
@@ -314,7 +326,7 @@ Function Set-PwshModulePath {
 
     }
     else {
-        
+
         Write-Warning "Only relevant for PowerShell Core - no changes made."
 
     }
@@ -356,7 +368,8 @@ Function New-SSHKeyPair {
 
     If ($Type -eq 'ed25519') {
         & ssh-keygen -t $Type -C $Comment -f $FilePath
-    } Else {
+    }
+    Else {
         & ssh-keygen -t $Type -b $Bits -C $Comment -f $FilePath
     }
 
@@ -378,7 +391,7 @@ Function Remove-SSHKnownHost {
 
 
 Function Get-DateTime {
-    
+
     [CmdletBinding(DefaultParameterSetName = 'DateTime')]
 
     param (
@@ -490,13 +503,14 @@ Function Attach-DockerContainer {
     [CmdletBinding()]
     param (
         [Parameter()]
+        [ValidateSet([DockerContainers])]
         [string]
         $ContainerName
     )
 
     docker start $ContainerName
     docker attach $ContainerName
-   
+
 }
 
 Function Remove-DockerContainer {
@@ -507,13 +521,14 @@ Function Remove-DockerContainer {
     [CmdletBinding()]
     param (
         [Parameter()]
+        [ValidateSet([DockerContainers])]
         [string]
         $ContainerName
     )
 
     docker stop $ContainerName
     docker rm $ContainerName
-   
+
 }
 
 
@@ -533,7 +548,7 @@ Function Get-EOLChar {
     If ((Get-Content -Raw -Path $Path ).contains("`r`n")) {
         Return '`r`n'
     }
-    
+
     If ((Get-Content -Raw -Path $Path ).contains("`n")) {
         Return '`n'
     }
@@ -548,7 +563,7 @@ Function Print-EOLChar {
 
     [CmdletBinding()]
     [Alias("gceol")]
-  
+
     param (
         [Parameter(Mandatory)]
         [string]
@@ -562,7 +577,7 @@ Function Print-EOLChar {
     $EOLChar = Get-EOLChar -Path $Path
 
     Switch ($EOLChar) {
-        
+
         '`r`n' {
             $PrintEOLChar = "$([char]0x240D)$([char]0x2424)"
             (Get-Content -Raw -Path $Path) -split "`r`n" | ForEach {
@@ -572,14 +587,14 @@ Function Print-EOLChar {
         }
 
         '`n' {
-            $PrintEOLChar = "$([char]0x2424)" 
+            $PrintEOLChar = "$([char]0x2424)"
             (Get-Content -Raw -Path $Path) -split "`n" | ForEach {
                 Write-Host "$_" -NoNewline
                 Write-Host  $PrintEOLChar -ForegroundColor $EOLColour
             }
         }
 
-    } 
+    }
 
 }
 
@@ -614,10 +629,10 @@ Function Out-StringWithLineNum {
         Write-Host "$($count.ToString().PadLeft(4, ' ')): " -ForegroundColor $LineNumColour -NoNewline
         $InputString
         $count++
-    } 
+    }
 
     end {
-        Return 
+        Return
     }
-    
+
 }
