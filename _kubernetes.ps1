@@ -25,14 +25,14 @@ New-Alias k kubectl.exe -Force
 
 
 # --------------------------------------------------
-# 
+#
 # --------------------------------------------------
 
 Function Refresh-Kubeconfig {
 
     If (Test-Path ~/.kube -PathType Container) {
         $env:KUBECONFIG = (gci ~/.kube/*.config).FullName -join ';'
-    } 
+    }
 
 }
 Refresh-Kubeconfig
@@ -108,13 +108,13 @@ Function Kube-Context {
         # [ArgumentCompleter( { Kube-Context -List -NameOnly } )]
         [ValidateSet([KubeContexts])]
         [string]$Context,
-        
+
         [Parameter(ParameterSetName = 'Unset', Mandatory = $False)]
         [switch]$Unset,
 
         [Parameter(ParameterSetName = 'List', Mandatory = $False)]
         [switch]$List,
-    
+
         [Parameter(ParameterSetName = 'List', Mandatory = $False)]
         [switch]$NameOnly
 
@@ -164,7 +164,7 @@ Function Kube-Namespace {
 
         [Parameter(ParameterSetName = 'List', Mandatory = $False)]
         [switch]$List,
-    
+
         [Parameter(ParameterSetName = 'List', Mandatory = $False)]
         [switch]$NameOnly
 
@@ -266,7 +266,7 @@ Function Remove-KubeFinalizer {
             $ApiName = 'namespaces'
             $ApiKind = 'Namespace'
         }
-        
+
         Default {
             $FinalizerLocation = 'metadata'
         }
@@ -299,6 +299,14 @@ Function Remove-KubeFinalizer {
         }
 
     }
+
+}
+
+
+Function Get-KubeIngress {
+
+    $ingresses = k get ingress -A -o json | ConvertFrom-Json -Depth 12
+    $ingresses.items | select @{N = 'namespace'; E = { $_.metadata.namespace } }, @{N = 'name'; E = { $_.metadata.name } }, @{N = 'host'; E = { $_.spec.rules.host } }, @{N = 'path'; E = { $_.spec.rules.http.paths.path } }
 
 }
 
