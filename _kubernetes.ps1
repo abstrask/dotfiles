@@ -305,8 +305,17 @@ Function Remove-KubeFinalizer {
 
 Function Get-KubeIngress {
 
-    $ingresses = k get ingress -A -o json | ConvertFrom-Json -Depth 12
-    $ingresses.items | select @{N = 'namespace'; E = { $_.metadata.namespace } }, @{N = 'name'; E = { $_.metadata.name } }, @{N = 'host'; E = { $_.spec.rules.host } }, @{N = 'path'; E = { $_.spec.rules.http.paths.path } }
+    $IngressJson = kubectl get ingress -A -o json | ConvertFrom-Json -Depth 12
+    ForEach ($IngressItem in $IngressJson.items) {
+        ForEach ($Rule in $IngressItem.spec.rules) {
+            [PSCustomObject]@{
+                namespace = $IngressItem.metadata.namespace
+                name      = $IngressItem.metadata.name
+                host      = $Rule.host
+                path      = $Rule.http.paths.path
+            }
+        }
+    }
 
 }
 
