@@ -479,12 +479,12 @@ Function Check-BinVersion {
 Function Remove-TerraDir {
 
     # Terragrunt cache first (may contain .terraform dirs too)
-    $dirs = gci -Recurse -Directory | ? { $_.Name -eq '.terragrunt-cache' }
+    $dirs = gci -Recurse -Directory -Filter '.terragrunt-cache'
     Write-Host "Deleting $($dirs.Count) '.terragrunt-cache' dir(s) recursively..." -ForegroundColor Green
     $dirs | rm -Recurse -Force
 
     # Terraform dirs
-    $dirs = gci -Recurse -Directory | ? { $_.Name -eq '.terraform' }
+    $dirs = gci -Recurse -Directory -Filter '.terraform'
     Write-Host "Deleting $($dirs.Count) '.terraform' dir(s) recursively..." -ForegroundColor Green
     $dirs | rm -Recurse -Force
 

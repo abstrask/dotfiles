@@ -96,6 +96,14 @@ Else {
 # --------------------------------------------------
 
 $ErrorView = "ConciseView"
+Import-Module PSReadLine
+Set-PSReadLineOption -PredictionSource History
+<#
+Add when PSReadLine 2.1 is released?:
+Set-PSReadLineOption -PredictionSource HistoryAndPlugin
+#OPTIONAL you can also enable ListView
+Set-PSReadLineOption -PredictionViewStyle ListView
+#>
 
 
 # --------------------------------------------------
