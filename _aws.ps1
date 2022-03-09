@@ -1,3 +1,11 @@
+#Requires -Module @{ ModuleName = 'AWS.Tools.Common'; ModuleVersion = '4.1.0' }
+#Requires -Module @{ ModuleName = 'AWS.Tools.EC2'; ModuleVersion = '4.1.0' }
+#Requires -Module @{ ModuleName = 'AWS.Tools.RDS'; ModuleVersion = '4.1.0' }
+#Requires -Module @{ ModuleName = 'AWS.Tools.SecurityToken'; ModuleVersion = '4.1.0' }
+#Requires -Module @{ ModuleName = 'AWS.Tools.Organizations'; ModuleVersion = '4.1.0' }
+#Requires -Module @{ ModuleName = 'AWS.Tools.SimpleSystemsManagement'; ModuleVersion = '4.1.0' }
+
+
 # --------------------------------------------------
 # Classes
 # --------------------------------------------------
