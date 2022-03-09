@@ -23,8 +23,8 @@ Register-ArgumentCompleter -Native -CommandName aws -ScriptBlock {
     aws_completer.exe | ForEach-Object {
         [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
     }
-    Remove-Item Env:\COMP_LINE     
-    Remove-Item Env:\COMP_POINT  
+    Remove-Item Env:\COMP_LINE
+    Remove-Item Env:\COMP_POINT
 }
 
 
@@ -53,13 +53,13 @@ Function Aws-Profile {
 
         [Parameter(ParameterSetName = 'List', Mandatory = $False)]
         [switch]$List
-       
+
     )
 
     Switch ($PSCmdlet.ParameterSetName) {
 
         'Set' {
-            $env:AWS_PROFILE = $Profile    
+            $env:AWS_PROFILE = $Profile
         }
 
         'Unset' {
@@ -82,7 +82,7 @@ Function Assume-AWSCLIRole {
 
         [Parameter(ParameterSetName = 'NotARN', Mandatory = $True)]
         [string]$AccountId,
-        
+
         [Parameter(ParameterSetName = 'NotARN', Mandatory = $False)]
         [string]$RoleName = 'OrgRole'
 
@@ -114,7 +114,7 @@ Function Assume-AwsRole {
 
         [Parameter(ParameterSetName = 'NotARN', Mandatory = $True)]
         [string]$AccountId,
-        
+
         [Parameter(ParameterSetName = 'NotARN', Mandatory = $False)]
         [string]$RoleName = 'OrgRole',
 
@@ -129,7 +129,7 @@ Function Assume-AwsRole {
     )
 
     # Use specified AWS profile if defined (else default credential search)
-    If ($SourceProfile) {    
+    If ($SourceProfile) {
         Set-AWSCredential -ProfileName $SourceProfile
     }
 
@@ -165,18 +165,18 @@ Function Get-AwsEc2Instances {
     )
 
     # Use specified AWS profile if defined (else default credential search)
-    If ($AwsProfile) {    
+    If ($AwsProfile) {
         Set-AWSCredential -ProfileName $AwsProfile
     }
 
     If (-Not($Region)) {
-        $Region = Get-AWSRegion | Select-Object -Expand Region | Sort
+        $Region = Get-AWSRegion | Where { $_.Region -notlike '*-iso*' } | Select-Object -Expand Region | Sort
     }
     Write-Verbose "Querying $($Region.Count) region(s)" -Verbose
 
     ForEach ($Reg in $Region) {
-
-        Try { Get-EC2Instance -Region $Reg | Select -Expand Instances | Select InstanceId, PrivateDnsName, InstanceType, LaunchTime }
+        Write-Verbose "Querying $Reg region"
+        Try { Get-EC2Instance -Region $Reg | Select -Expand Instances | Select <#InstanceId, PrivateDnsName,#> InstanceType, LaunchTime, State, @{N = 'Region'; E = { $Reg } } }
         Catch { <#Write-Warning "$_"#> }
 
     }
@@ -208,7 +208,7 @@ Function Get-AwsRdsInstances {
     )
 
     # Use specified AWS profile if defined (else default credential search)
-    If ($AwsProfile) {    
+    If ($AwsProfile) {
         Set-AWSCredential -ProfileName $AwsProfile
     }
 
@@ -240,7 +240,7 @@ Function Get-AwsAccount {
     )
 
     # Use specified AWS profile if defined (else default credential search)
-    If ($AwsProfile) {    
+    If ($AwsProfile) {
         Set-AWSCredential -ProfileName $AwsProfile
     }
 
@@ -251,7 +251,7 @@ Function Get-AwsAccount {
 
 Function Get-KubeConfigFromSSM {
 
-     [CmdletBinding()]
+    [CmdletBinding()]
 
     param (
         [Parameter(Mandatory)]
