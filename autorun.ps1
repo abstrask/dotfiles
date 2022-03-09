@@ -80,13 +80,14 @@ Get-ChildItem -Path $DotfilesPath -Filter _*.ps1 | ForEach {
 #     Write-Warning "PowerLine module not found, skipping theming"
 # }
 
-If (Get-Module oh-my-posh -ListAvailable) {
-    Import-Module oh-my-posh
-    Set-PoshPrompt aliens
-}
-Else {
-    Write-Warning "oh-my-posh module not found, skipping theming"
-}
+# Disabled due to performance issues on work laptop
+# If (Get-Module oh-my-posh -ListAvailable) {
+#     Import-Module oh-my-posh
+#     Set-PoshPrompt aliens
+# }
+# Else {
+#     Write-Warning "oh-my-posh module not found, skipping theming"
+# }
 
 # Invoke-Expression (&starship init powershell)
 
