@@ -176,7 +176,7 @@ Function Get-AwsEc2Instances {
 
     ForEach ($Reg in $Region) {
         Write-Verbose "Querying $Reg region"
-        Try { Get-EC2Instance -Region $Reg | Select -Expand Instances | Select <#InstanceId, PrivateDnsName,#> InstanceType, LaunchTime, State, @{N = 'Region'; E = { $Reg } } }
+        Try { Get-EC2Instance -Region $Reg | Select -Expand Instances | Select <#InstanceId, PrivateDnsName,#> InstanceType, LaunchTime, @{N = 'State'; E = { $_.State.Name } }, @{N = 'Region'; E = { $Reg } } }
         Catch { <#Write-Warning "$_"#> }
 
     }
