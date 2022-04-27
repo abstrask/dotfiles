@@ -50,6 +50,36 @@ Function Change-GitFileMod {
     git.exe update-index --chmod=+x $FilePath
 }
 
+Function Get-GitUncleanRepos {
+
+    [CmdletBinding()]
+    param (
+        [Parameter()]
+        [string]
+        $RepoRoot = "C:\code"
+    )
+
+    Write-Verbose "Checking Git repositories at $RepoRoot for uncommited changes" -Verbose
+
+    $GitDirs = gci -Path C:\code -Recurse -Force -Directory -Filter '.git' | Select -Expand Parent | Where { $_.FullName -notlike '*\.terra*' } | Sort FullName
+
+    Write-Verbose "$($GitDirs.Count) repositories found, checking status" -Verbose
+
+    $UncleanRepos = $GitDirs | ForEach {
+        pushd $_.FullName
+        If (!(git status | Select-String "nothing to commit, working tree clean")) {
+            $_
+        }
+        popd
+    }
+
+    If ($UncleanRepos) {
+        Write-Verbose "$($UncleanRepos.Count) unclean repo(s) found" -Verbose
+        return $UncleanRepos | Select -Expand FullName
+    }
+
+}
+
 
 # --------------------------------------------------
 # Misc
