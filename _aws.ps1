@@ -75,7 +75,9 @@ Function Aws-Profile {
         }
 
         'List' {
-            (Get-Content ~\.aws\config | Select-String -Pattern "\[profile ") -replace '\[profile ', '' -replace '\]', '' | Sort
+            $CredProfiles = (Get-Content ~\.aws\credentials | Select-String -Pattern "\[") -replace '\[', '' -replace '\]', ''
+            $ConfProfiles = (Get-Content ~\.aws\config | Select-String -Pattern "\[profile ") -replace '\[profile ', '' -replace '\]', ''
+            return $ConfProfiles + $CredProfiles | Select -Unique | Sort
         }
 
     }
