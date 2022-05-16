@@ -61,7 +61,7 @@ Function Get-GitUncleanRepos {
 
     Write-Verbose "Checking Git repositories at $RepoRoot for uncommited changes" -Verbose
 
-    $GitDirs = gci -Path C:\code -Recurse -Force -Directory -Filter '.git' | Select -Expand Parent | Where { $_.FullName -notlike '*\.terra*' } | Sort FullName
+    $GitDirs = gci -Path $RepoRoot -Recurse -Force -Directory -Filter '.git' | Select -Expand Parent | Where { $_.FullName -notlike '*\.terra*' } | Sort FullName
 
     Write-Verbose "$($GitDirs.Count) repositories found, checking status" -Verbose
 
